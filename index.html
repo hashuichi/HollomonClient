@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#006C35">
+<title>🇸🇦 Al-Hassib — الحاسب السعودي</title>
+<style>
+  :root{
+    --saudi-green:#006C35;
+    --deep-green:#004d25;
+    --gold:#C9A227;
+    --gold-dark:#b08e1f;
+    --sand:#F4E9CD;
+    --night:#062b1a;
+    --white:#ffffff;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{height:100%;margin:0;}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:
+      radial-gradient(circle at 20% 15%, rgba(201,162,39,.18), transparent 40%),
+      radial-gradient(circle at 85% 90%, rgba(0,108,53,.35), transparent 45%),
+      var(--night);
+    display:flex;align-items:center;justify-content:center;
+    min-height:100dvh;padding:16px;
+    color:var(--white);
+  }
+  .calc{
+    width:100%;max-width:380px;
+    background:linear-gradient(160deg, #0a3a23, var(--night));
+    border:2px solid var(--gold);
+    border-radius:24px;
+    box-shadow:0 18px 50px rgba(0,0,0,.55);
+    padding:18px;
+  }
+  .header{
+    text-align:center;
+    color:var(--gold);
+    font-size:1.45rem;font-weight:800;
+    letter-spacing:.5px;
+    margin:2px 0 12px;
+    text-shadow:0 2px 6px rgba(0,0,0,.4);
+  }
+  .header .pal{filter:saturate(1.3);}
+  .display{
+    background:var(--sand);
+    color:var(--deep-green);
+    border-radius:16px;
+    border:4px solid var(--gold);
+    padding:18px 20px;
+    min-height:96px;
+    display:flex;flex-direction:column;justify-content:flex-end;align-items:flex-end;
+    overflow:hidden;
+    box-shadow:inset 0 3px 8px rgba(0,0,0,.15);
+  }
+  .history{font-size:1rem;opacity:.6;min-height:1.2em;direction:ltr;}
+  .result{
+    font-family:"Courier New",monospace;
+    font-size:2.6rem;font-weight:800;line-height:1.1;
+    direction:ltr;word-break:break-all;
+  }
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:10px;margin-top:16px;
+  }
+  button{
+    border:0;border-radius:16px;
+    padding:18px 0;font-size:1.5rem;font-weight:700;
+    cursor:pointer;color:var(--white);
+    transition:transform .06s ease, filter .15s ease;
+    user-select:none;
+  }
+  button:active{transform:translateY(2px) scale(.97);filter:brightness(1.1);}
+  .num{background:var(--white);color:var(--deep-green);box-shadow:0 3px 0 #d8cdb0;}
+  .op{background:var(--saudi-green);box-shadow:0 3px 0 var(--deep-green);}
+  .fn{background:var(--gold);color:var(--night);box-shadow:0 3px 0 var(--gold-dark);}
+  .eq{background:var(--gold);color:var(--night);box-shadow:0 3px 0 var(--gold-dark);}
+  .camel{background:var(--deep-green);color:var(--gold);box-shadow:0 3px 0 #022;}
+  .footer{
+    text-align:center;color:var(--sand);
+    font-size:.78rem;font-style:italic;opacity:.85;
+    margin-top:14px;
+  }
+</style>
+</head>
+<body>
+  <main class="calc">
+    <div class="header"><span class="pal">🌴</span>&nbsp; الحاسب السعودي &nbsp;<span class="pal">🐪</span></div>
+    <div class="display">
+      <div class="history" id="history"></div>
+      <div class="result" id="result">٠</div>
+    </div>
+    <div class="grid" id="pad">
+      <button class="fn" data-k="C">C</button>
+      <button class="fn" data-k="back">⌫</button>
+      <button class="op" data-k="%">%</button>
+      <button class="op" data-k="/">÷</button>
+
+      <button class="num" data-k="7">7</button>
+      <button class="num" data-k="8">8</button>
+      <button class="num" data-k="9">9</button>
+      <button class="op" data-k="*">×</button>
+
+      <button class="num" data-k="4">4</button>
+      <button class="num" data-k="5">5</button>
+      <button class="num" data-k="6">6</button>
+      <button class="op" data-k="-">−</button>
+
+      <button class="num" data-k="1">1</button>
+      <button class="num" data-k="2">2</button>
+      <button class="num" data-k="3">3</button>
+      <button class="op" data-k="+">+</button>
+
+      <button class="num" data-k="0">0</button>
+      <button class="num" data-k=".">.</button>
+      <button class="camel" data-k="camel">🐪</button>
+      <button class="eq" data-k="=">=</button>
+    </div>
+    <div class="footer">صُنع بكل حب &nbsp;•&nbsp; Made with 💚 in the Kingdom</div>
+  </main>
+
+<script>
+  const AR = ["٠","١","٢","٣","٤","٥","٦","٧","٨","٩"];
+  const toArabic = s => String(s).replace(/[0-9]/g, d => AR[+d]);
+  const pretty = s => s.replace(/\*/g," × ").replace(/\//g," ÷ ")
+                       .replace(/-/g," − ").replace(/\+/g," + ").replace(/%/g," % ");
+
+  let expr = "";
+  const resultEl = document.getElementById("result");
+  const historyEl = document.getElementById("history");
+
+  function render(){
+    resultEl.textContent = expr ? toArabic(pretty(expr)) : "٠";
+  }
+
+  function evaluate(){
+    if(!expr) return;
+    if(!/^[0-9+\-*/%.\s]+$/.test(expr)){ flash("خطأ — Error 😅"); return; }
+    try{
+      let val = Function('"use strict";return ('+expr+')')();
+      if(val === Infinity || val === -Infinity){ flash("لا تقسم على صفر! 🚫"); return; }
+      if(Number.isNaN(val)){ flash("خطأ — Error 😅"); return; }
+      val = Math.round((val + Number.EPSILON) * 1e10) / 1e10; // tidy float noise
+      historyEl.textContent = pretty(expr) + " =";
+      expr = String(val);
+      render();
+    }catch(e){ flash("خطأ — Error 😅"); }
+  }
+
+  function flash(msg){
+    resultEl.textContent = msg;
+    historyEl.textContent = "";
+    expr = "";
+  }
+
+  function press(k){
+    switch(k){
+      case "C": expr=""; historyEl.textContent=""; break;
+      case "back": expr = expr.slice(0,-1); break;
+      case "=": evaluate(); return;
+      case "camel": flash("أهلاً وسهلاً 🐪"); return;
+      default: expr += k;
+    }
+    render();
+  }
+
+  document.getElementById("pad").addEventListener("click", e=>{
+    const b = e.target.closest("button");
+    if(b) press(b.dataset.k);
+  });
+
+  // Physical keyboard support (desktop)
+  window.addEventListener("keydown", e=>{
+    const k = e.key;
+    if(/[0-9+\-*/%.]/.test(k) && k.length===1) press(k);
+    else if(k==="Enter" || k==="=") { e.preventDefault(); press("="); }
+    else if(k==="Backspace") press("back");
+    else if(k==="Escape" || k.toLowerCase()==="c") press("C");
+  });
+
+  render();
+</script>
+</body>
+</html>
