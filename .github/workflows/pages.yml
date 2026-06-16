@@ -2,7 +2,7 @@ name: Deploy Saudi Calculator to Pages
 
 on:
   push:
-    branches: ["claude/saudi-calculator-app-y7lxyo"]
+    branches: ["main", "claude/saudi-calculator-app-y7lxyo"]
   workflow_dispatch:
 
 permissions:
